@@ -1,7 +1,25 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M3U Collector Web</title><link rel="stylesheet" href="/styles.css"></head>
-<body><div class="shell"><header><div><h1>M3U Collector</h1><p>Gerenciador web baseado nas funções do V5.2</p></div><span id="status" class="pill">Pronto</span></header>
-<section class="card"><h2>1. Servidores</h2><div id="servers"></div><div class="actions"><button id="addServer">+ Adicionar servidor</button><button id="test">Testar conexão</button></div></section>
-<section class="card"><h2>2. Coleta</h2><div class="grid"><label>Tipo<select id="type"><option value="live">Canais</option><option value="vod">Filmes</option><option value="series">Séries</option></select></label><label>Filtro<input id="filter" placeholder="Nome ou grupo"></label></div><div class="actions"><button id="collect" class="primary">Coletar</button><button id="selectAll">Selecionar todos</button><button id="clear">Limpar</button></div></section>
-<section class="card"><h2>3. Playlist</h2><div id="stats">Nenhum item carregado.</div><div id="list" class="list"></div><div class="actions"><button id="download" class="primary">Baixar M3U</button></div></section>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M3U Collector Web</title><link rel="stylesheet" href="/styles.css">
+</head>
+<body><div class="shell">
+<header><div><h1>M3U Collector</h1><p>Coletor, organizador e gerador de playlists M3U</p></div><span id="status" class="pill">Pronto</span></header>
+
+<section class="card"><h2>1. Servidores Xtream</h2><div id="servers"></div>
+<div class="actions"><button id="addServer">+ Adicionar servidor</button><button id="test">Testar conexão</button><button id="collectAll" class="primary">Coletar todos</button></div>
+</section>
+
+<section class="card"><h2>2. Importar ou coletar</h2>
+<div class="grid"><label>Tipo de coleta<select id="type"><option value="live">Canais</option><option value="vod">Filmes</option><option value="series">Séries</option></select></label>
+<label>Pesquisa<input id="filter" placeholder="Nome, grupo ou servidor"></label></div>
+<div class="importbox"><label>Importar M3U existente<input id="m3uFile" type="file" accept=".m3u,.m3u8,.txt"></label><button id="importText">Colar M3U</button></div>
+<div class="actions"><button id="collect" class="primary">Coletar servidor ativo</button><button id="selectAll">Selecionar todos</button><button id="clear">Limpar seleção</button><button id="dedupe">Remover duplicados</button></div>
+</section>
+
+<section class="card"><h2>3. Playlist</h2><div id="stats">Nenhum item carregado.</div>
+<div class="toolbar"><label>Grupo<select id="groupFilter"><option value="">Todos os grupos</option></select></label><label>Servidor<select id="serverFilter"><option value="">Todos os servidores</option></select></label></div>
+<div id="list" class="list"></div>
+<div class="actions"><button id="download" class="primary">Baixar M3U</button><button id="downloadGroups">Baixar por grupos</button><button id="downloadServers">Baixar por servidores</button></div>
+</section>
 </div><script src="/app.js"></script></body></html>
