@@ -69,7 +69,15 @@ async function seriesEntries(streams,s,u,p,map){
   }
   return out;
 }
-async function api(req,res){
+async 
+// IP/Port scanner: restricted to authenticated panel use and bounded scan sizes.
+function ipv4ToInt(ip){const p=String(ip).trim().split(".").map(Number);if(p.length!==4||p.some(n=>!Number.isInteger(n)||n<0||n>255))throw Error("IPv4 inválido: "+ip);return (((p[0]*256+p[1])*256+p[2])*256+p[3])>>>0}
+function intToIpv4(n){return [(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255].join(".")}
+function expandIps(start,end){const a=ipv4ToInt(start),b=ipv4ToInt(end);if(b<a)throw Error("IP final deve ser maior ou igual ao IP inicial");if(b-a+1>256)throw Error("Limite de 256 IPs por escaneamento");const out=[];for(let n=a;n<=b;n++)out.push(intToIpv4(n));return out}
+function parsePorts(input){const out=new Set();for(const part of String(input||"").split(",")){const v=part.trim();if(!v)continue;if(v.includes("-")){const [as,bs]=v.split("-").map(Number);if(!Number.isInteger(as)||!Number.isInteger(bs)||as<1||bs>65535||as>bs)throw Error("Intervalo de portas inválido");if(bs-as+1>100)throw Error("Cada intervalo pode ter no máximo 100 portas");for(let p=as;p<=bs;p++)out.add(p)}else{const p=Number(v);if(!Number.isInteger(p)||p<1||p>65535)throw Error("Porta inválida: "+v);out.add(p)}}if(!out.size)throw Error("Informe pelo menos uma porta");if(out.size>100)throw Error("Limite de 100 portas por escaneamento");return [...out]}
+function tcpOpen(host,port,timeout=1200){return new Promise(resolve=>{const net=require("net"),sock=new net.Socket();let done=false;const finish=open=>{if(done)return;done=true;sock.destroy();resolve(open)};sock.setTimeout(timeout);sock.once("connect",()=>finish(true));sock.once("timeout",()=>finish(false));sock.once("error",()=>finish(false));sock.connect(port,host)})}
+async function scanPorts(host,ports,concurrency=32){const results=[];let cursor=0;async function worker(){while(true){const i=cursor++;if(i>=ports.length)return;const port=ports[i];if(await tcpOpen(host,port))results.push({ip:host,port,status:"aberta"})}}await Promise.all(Array.from({length:Math.min(concurrency,ports.length)},worker));return results.sort((x,y)=>x.port-y.port)}
+\nfunction api(req,res){
   const u=new URL(req.url,"http://localhost");
   if(req.method==="OPTIONS"){res.writeHead(204,{"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"Content-Type","Access-Control-Allow-Credentials":"true"});return res.end()}
   if(req.method==="GET"&&u.pathname==="/api/health")return send(res,200,{ok:true,app:"M3U Collector Web",version:"2.0.0"});
@@ -98,6 +106,7 @@ async function api(req,res){
       const text=await r.text();
       return send(res,200,{ok:r.ok||r.status===206,status:r.status,contentType:r.headers.get("content-type")||"",bytes:text.length,snippet:text.slice(0,500)});
     }
+    if(u.pathname==="/api/scan"){const ips=expandIps(b.ipStart,b.ipEnd);const ports=parsePorts(b.ports);const results=[];for(const ip of ips){results.push(...await scanPorts(ip,ports));}return send(res,200,{ok:true,scannedIps:ips.length,scannedPorts:ports.length,results});}
     if(u.pathname==="/api/collect"){
       const type=b.type||"live";let cats,streams,map;
       if(type==="live"){cats=await xtream(b.server,"get_live_categories",{username:b.username,password:b.password});streams=await xtream(b.server,"get_live_streams",{username:b.username,password:b.password});map=Object.fromEntries((cats||[]).map(x=>[String(x.category_id),x.category_name]));return send(res,200,{type,items:(streams||[]).map(x=>liveEntry(x,b.server,b.username,b.password,map))})}
