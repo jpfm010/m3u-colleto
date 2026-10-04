@@ -1,0 +1,8 @@
+{
+  "name":"m3u-collector-web",
+  "version":"1.0.0",
+  "private":true,
+  "description":"M3U Collector Web baseado nas funções observadas do V5.2",
+  "scripts":{"start":"node server.js"},
+  "engines":{"node":">=18"}
+}
