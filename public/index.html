@@ -1,25 +1,18 @@
 <!doctype html>
-<html lang="pt-BR">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>M3U Collector Web</title><link rel="stylesheet" href="/styles.css">
-</head>
-<body><div class="shell">
-<header><div><h1>M3U Collector</h1><p>Coletor, organizador e gerador de playlists M3U</p></div><span id="status" class="pill">Pronto</span></header>
-
-<section class="card"><h2>1. Servidores Xtream</h2><div id="servers"></div>
-<div class="actions"><button id="addServer">+ Adicionar servidor</button><button id="test">Testar conexão</button><button id="collectAll" class="primary">Coletar todos</button></div>
-</section>
-
-<section class="card"><h2>2. Importar ou coletar</h2>
-<div class="grid"><label>Tipo de coleta<select id="type"><option value="live">Canais</option><option value="vod">Filmes</option><option value="series">Séries</option></select></label>
-<label>Pesquisa<input id="filter" placeholder="Nome, grupo ou servidor"></label></div>
-<div class="importbox"><label>Importar M3U existente<input id="m3uFile" type="file" accept=".m3u,.m3u8,.txt"></label><button id="importText">Colar M3U</button></div>
-<div class="actions"><button id="collect" class="primary">Coletar servidor ativo</button><button id="selectAll">Selecionar todos</button><button id="clear">Limpar seleção</button><button id="dedupe">Remover duplicados</button></div>
-</section>
-
-<section class="card"><h2>3. Playlist</h2><div id="stats">Nenhum item carregado.</div>
-<div class="toolbar"><label>Grupo<select id="groupFilter"><option value="">Todos os grupos</option></select></label><label>Servidor<select id="serverFilter"><option value="">Todos os servidores</option></select></label></div>
-<div id="list" class="list"></div>
-<div class="actions"><button id="download" class="primary">Baixar M3U</button><button id="downloadGroups">Baixar por grupos</button><button id="downloadServers">Baixar por servidores</button></div>
-</section>
-</div><script src="/app.js"></script></body></html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>M3U Collector Web</title><link rel="stylesheet" href="/styles.css"></head>
+<body>
+<div id="login" class="login"><div class="loginbox"><h1>M3U Collector</h1><p>Painel protegido</p><input id="loginUser" placeholder="Usuário" autocomplete="username"><input id="loginPass" type="password" placeholder="Senha" autocomplete="current-password"><button id="loginBtn" class="primary">Entrar</button><div id="loginMsg"></div><small>Defina PANEL_USER e PANEL_PASSWORD no servidor para alterar o acesso. Padrão inicial: admin / admin123.</small></div></div>
+<div id="app" class="shell hidden">
+<header><div><h1>M3U Collector</h1><p>Coletor, organizador e gerador de playlists M3U</p></div><div class="headActions"><span id="status" class="pill">Pronto</span><button id="logout">Sair</button></div></header>
+<section class="card"><h2>1. Servidores Xtream</h2><div id="servers"></div><div class="actions"><button id="addServer">+ Adicionar servidor</button><button id="test">Testar conexão</button><button id="collectAll" class="primary">Coletar todos</button></div></section>
+<section class="card"><h2>2. Importar ou coletar</h2><div class="grid"><label>Tipo de coleta<select id="type"><option value="live">Canais</option><option value="vod">Filmes</option><option value="series">Séries + episódios</option></select></label><label>Pesquisa<input id="filter" placeholder="Nome, grupo ou servidor"></label></div><div class="importbox"><label>Importar M3U existente<input id="m3uFile" type="file" accept=".m3u,.m3u8,.txt"></label><button id="importText">Colar M3U</button></div><div class="actions"><button id="collect" class="primary">Coletar servidor ativo</button><button id="selectAll">Selecionar visíveis</button><button id="clear">Limpar visíveis</button><button id="dedupe">Deduplicação avançada</button></div></section>
+<section class="card"><h2>3. Categorias e regras de renomeação</h2><div class="grid rulegrid"><label>Campo<select id="ruleField"><option value="name">Nome</option><option value="group">Categoria/Grupo</option></select></label><label>Correspondência<select id="ruleMode"><option value="contains">Contém</option><option value="starts">Começa com</option><option value="regex">Regex</option></select></label><label>Texto/regra<input id="ruleFrom" placeholder="ex.: globo"></label><label>Ação<select id="ruleAction"><option value="rename">Renomear</option><option value="group">Mover para grupo</option></select></label><label>Novo valor<input id="ruleTo" placeholder="ex.: Globo HD"></label></div><div class="actions"><button id="addRule" class="primary">Adicionar regra</button><button id="applyRules">Aplicar regras aos itens</button></div><div id="rules" class="rules"></div></section>
+<section class="card"><h2>4. Editor em massa</h2><div class="grid"><label>Novo nome<input id="bulkName" placeholder="Deixe vazio para não alterar"></label><label>Novo grupo<input id="bulkGroup" placeholder="Deixe vazio para não alterar"></label><label>Nova logo<input id="bulkLogo" placeholder="URL da logo"></label></div><div class="actions"><button id="bulkApply" class="primary">Aplicar aos selecionados</button></div></section>
+<section class="card"><h2>5. Playlist</h2><div id="stats">Nenhum item carregado.</div><div class="toolbar"><label>Grupo<select id="groupFilter"><option value="">Todos os grupos</option></select></label><label>Servidor<select id="serverFilter"><option value="">Todos os servidores</option></select></label></div><div id="list" class="list"></div><div class="actions"><button id="download" class="primary">Baixar M3U</button><button id="downloadGroups">Baixar por grupos</button><button id="downloadServers">Baixar por servidores</button></div></section>
+<section class="card"><h2>6. Exportação por múltiplos critérios</h2><div class="grid"><label>Nome contém<input id="criteriaName" placeholder="Ex.: ESPN"></label><label>Grupo<select id="criteriaGroup"><option value="">Qualquer grupo</option></select></label><label>Servidor<select id="criteriaServer"><option value="">Qualquer servidor</option></select></label></div><div class="actions"><button id="criteriaExport" class="primary">Gerar playlist pelos critérios</button></div></section>
+<section class="card"><h2>7. Histórico de operações</h2><div id="history" class="history"></div><div class="actions"><button id="clearHistory">Limpar histórico</button></div></section>
+</div><div id="modal" class="modal hidden"></div><script src="/app.js"></script><script>
+(async()=>{const r=await fetch("/api/session",{credentials:"same-origin"});const j=await r.json();if(j.authenticated){document.querySelector("#login").classList.add("hidden");document.querySelector("#app").classList.remove("hidden")}else document.querySelector("#login").classList.remove("hidden")})();
+document.querySelector("#loginBtn").onclick=async()=>{const msg=document.querySelector("#loginMsg");msg.textContent="Entrando...";try{const r=await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({username:document.querySelector("#loginUser").value,password:document.querySelector("#loginPass").value})});const j=await r.json();if(!r.ok)throw Error(j.error);location.reload()}catch(e){msg.textContent=e.message}};
+document.querySelector("#loginPass").onkeydown=e=>{if(e.key==="Enter")document.querySelector("#loginBtn").click()};
+</script></body></html>
