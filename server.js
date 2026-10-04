@@ -51,7 +51,7 @@ async function xtream(server,action,params){
   try{return JSON.parse(t)}catch{throw Error("Servidor Xtream não retornou JSON. URL usada: "+u.pathname)}
 }
 const clean=s=>String(s??"").replace(/[\r\n]+/g," ").trim();
-function base(server,user,pass,pathPart){return String(server).replace(/\/+$/,"")+pathPart.replace(/\{2,}/g,"/")}
+function base(server,user,pass,pathPart){return panelBase(server)+pathPart.replace(/\/{2,}/g,"/")}
 function liveEntry(x,s,u,p,map){return {name:clean(x.name),logo:clean(x.stream_icon),group:map[String(x.category_id)]||"Canais",url:base(s,u,p,"/live/"+encodeURIComponent(u)+"/"+encodeURIComponent(p)+"/"+x.stream_id+".m3u8")}}
 function vodEntry(x,s,u,p,map){return {name:clean(x.name),logo:clean(x.stream_icon),group:map[String(x.category_id)]||"Filmes",url:base(s,u,p,"/movie/"+encodeURIComponent(u)+"/"+encodeURIComponent(p)+"/"+x.stream_id+"."+(x.container_extension||"mp4"))}}
 async function seriesEntries(streams,s,u,p,map){
