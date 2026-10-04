@@ -1,0 +1,17 @@
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+let items=[];
+function addServer(v={}){const d=document.createElement("div");d.className="server";d.innerHTML='<input class="srv" placeholder="http://servidor:porta"><input class="usr" placeholder="Usuário"><input class="pwd" type="password" placeholder="Senha"><button class="remove">×</button>';d.querySelector(".srv").value=v.server||"";d.querySelector(".usr").value=v.username||"";d.querySelector(".pwd").value=v.password||"";d.querySelector(".remove").onclick=()=>{if($$(".server").length>1)d.remove()};$("#servers").appendChild(d)}
+const saved=JSON.parse(localStorage.getItem("m3uServers")||"[]");(saved.length?saved:[{}]).slice(0,5).forEach(addServer);
+function servers(){return $$(".server").map(d=>({server:d.querySelector(".srv").value.trim(),username:d.querySelector(".usr").value.trim(),password:d.querySelector(".pwd").value})).filter(x=>x.server)}
+function active(){const s=servers()[0];if(!s)throw Error("Informe pelo menos um servidor.");return s}
+async function post(url,data){const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});const j=await r.json();if(!r.ok)throw Error(j.error||"Falha");return j}
+function status(t){$("#status").textContent=t}
+$("#addServer").onclick=()=>{if($$(".server").length<5)addServer();else alert("Limite de 5 servidores.")};
+$("#test").onclick=async()=>{try{status("Testando...");await post("/api/test",active());status("Conectado ✓")}catch(e){status("Erro");alert(e.message)}};
+$("#collect").onclick=async()=>{try{status("Coletando...");const s=active();localStorage.setItem("m3uServers",JSON.stringify(servers()));const j=await post("/api/collect",{...s,type:$("#type").value});items=j.items||[];render();status(items.length+" itens")}catch(e){status("Erro");alert(e.message)}};
+$("#filter").oninput=render;
+$("#selectAll").onclick=()=>$$('#list input[type="checkbox"]').forEach(x=>x.checked=true);
+$("#clear").onclick=()=>$$('#list input[type="checkbox"]').forEach(x=>x.checked=false);
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function render(){const q=$("#filter").value.toLowerCase(),shown=items.filter(x=>(x.name+" "+x.group).toLowerCase().includes(q));$("#stats").textContent=shown.length+" exibidos de "+items.length+" itens";$("#list").innerHTML=shown.length?shown.map(x=>'<label class="item"><input type="checkbox" data-i="'+items.indexOf(x)+'" checked><img src="'+esc(x.logo||"")+'" onerror="this.style.display=\'none\'"><span class="name"><b>'+esc(x.name)+'</b><br><span class="group">'+esc(x.group||"Sem grupo")+'</span></span></label>').join(""):'<div class="empty">Nenhum item.</div>'}
+$("#download").onclick=()=>{const selected=$$('#list input[type="checkbox"]:checked').map(c=>items[+c.dataset.i]).filter(Boolean);if(!selected.length)return alert("Selecione pelo menos um item.");const lines=["#EXTM3U"];selected.forEach(x=>{let a='tvg-name="'+String(x.name).replace(/"/g,"&quot;")+'"';if(x.logo)a+=' tvg-logo="'+String(x.logo).replace(/"/g,"&quot;")+'"';if(x.group)a+=' group-title="'+String(x.group).replace(/"/g,"&quot;")+'"';lines.push("#EXTINF:-1 "+a+","+x.name,x.url)});const blob=new Blob([lines.join("\\n")+"\\n"],{type:"audio/x-mpegurl"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="M3U-Collector.m3u";a.click();URL.revokeObjectURL(a.href)};
