@@ -21,6 +21,12 @@
   <div class="headActions"><span id="status" class="pill">Sistema pronto</span><button id="logout">Sair</button></div>
 </header>
 
+<section class="card"><h2>Scanner de IP e Porta</h2>
+<div class="grid"><label>IP inicial<input id="scanStart" placeholder="192.168.1.1"></label><label>IP final<input id="scanEnd" placeholder="192.168.1.254"></label><label>Portas<input id="scanPorts" value="80,443,8080,8000" placeholder="80,443,8000-8010"></label></div>
+<div class="actions"><button id="scanStartBtn" class="primary">Iniciar escaneamento</button><button id="scanClear">Limpar resultados</button></div>
+<div id="scanStats">Nenhum escaneamento executado.</div><div id="scanResults" class="list"></div>
+</section>
+
 <section class="card"><h2>Servidores Xtream</h2><div id="servers"></div><div class="actions"><button id="addServer">+ Adicionar servidor</button><button id="test">Testar conexão</button><button id="collectAll" class="primary">Coletar todos</button></div></section>
 
 <section class="card"><h2>Importar ou coletar</h2>
