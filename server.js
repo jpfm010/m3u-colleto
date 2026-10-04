@@ -18,14 +18,37 @@ function readBody(req){return new Promise((resolve,reject)=>{let b="";req.on("da
 function cookie(req){return (req.headers.cookie||"").split(";").map(x=>x.trim()).find(x=>x.startsWith("m3u_session="))?.split("=")[1]}
 function isAuth(req){const id=cookie(req);return !!(id&&sessions.has(id))}
 function requireAuth(req,res){if(isAuth(req))return true;send(res,401,{error:"Não autenticado"});return false}
-function authUrl(server,user,pass){const u=new URL(String(server||"").replace(/\/+$/,""));u.searchParams.set("username",user);u.searchParams.set("password",pass);return u.toString()}
+function panelBase(server){
+  const raw=String(server||"").trim();
+  const u=new URL(raw);
+  let p=u.pathname||"/";
+  p=p.replace(/\/player_api\.php\/?$/i,"/");
+  p=p.replace(/\/+$/,"");
+  return u.origin+(p?"/"+p.replace(/^\/+|\/+$/g,""):"");
+}
+function xtreamUrl(server){
+  const raw=String(server||"").trim();
+  const u=new URL(raw);
+  if(!/\/player_api\.php\/?$/i.test(u.pathname||"")){
+    let p=(u.pathname||"/").replace(/\/+$/,"");
+    u.pathname=(p?p:"")+"/player_api.php";
+  }
+  return u;
+}
+function authUrl(server,user,pass){
+  const u=xtreamUrl(server);
+  u.searchParams.set("username",user);
+  u.searchParams.set("password",pass);
+  return u.toString();
+}
 async function xtream(server,action,params){
-  const u=new URL(String(server||"").replace(/\/+$/,""));
+  const u=xtreamUrl(server);
   Object.entries(params||{}).forEach(([k,v])=>u.searchParams.set(k,v));
   if(action)u.searchParams.set("action",action);
-  const r=await fetch(u,{headers:{"User-Agent":"M3U-Collector-Web/2.0"},signal:AbortSignal.timeout(20000)});
-  const t=await r.text();if(!r.ok)throw Error("Xtream HTTP "+r.status);
-  try{return JSON.parse(t)}catch{throw Error("Resposta não é JSON")}
+  const r=await fetch(u,{headers:{"User-Agent":"M3U-Collector-Web/2.0","Accept":"application/json"},signal:AbortSignal.timeout(20000),redirect:"follow"});
+  const t=await r.text();
+  if(!r.ok)throw Error("Servidor Xtream retornou HTTP "+r.status+" em "+u.pathname+". Verifique URL, usuário e senha.");
+  try{return JSON.parse(t)}catch{throw Error("Servidor Xtream não retornou JSON. URL usada: "+u.pathname)}
 }
 const clean=s=>String(s??"").replace(/[\r\n]+/g," ").trim();
 function base(server,user,pass,pathPart){return String(server).replace(/\/+$/,"")+pathPart.replace(/\{2,}/g,"/")}
